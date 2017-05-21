@@ -48,6 +48,8 @@ function handleFormSubmit(event) {
 	  	.trim()
 	};
 
+	console.log(newTrip);
+
 	// If we're updating a post run updatePost to update a post
 	// Otherwise run submitPost to create a whole new post
 	if (updating) {
