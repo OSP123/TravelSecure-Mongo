@@ -1,4 +1,4 @@
-var db       = require('../models');
+var User       = require('../models/User');
 var express  = require('express');
 var router   = express.Router();
 var passport = require("../config/passport");
@@ -25,29 +25,38 @@ router.post('/login', passport.authenticate("local"), function(req, res) {
   res.json("/");
 });
 
-
 // register a user
 router.post('/signup', function(req,res) {
-	db.User.findAll({
-    where: {username: req.body.username}
-  }).then(function(users) {
-    if (users.length > 0) {
-      res.json({
-        duplicateUser: true
-      });
-    //At some point, make sure that only one user can be associated with an email.
-		} else {
-      db.User.create({
-        username: req.body.username,
-        email: req.body.email,
-        password: req.body.password
-      }).then(function() {
-        res.send({redirect: '/'});
-      }).catch(function(err) {
-        res.json(err);
-      });
+
+  User.findOne({ 'username' :  req.body.username }, function(err, user) {
+
+    // check to see if theres already a user with that email
+    if (user) {
+        res.send({
+          duplicateUser: true
+        })
+    } else {
+
+        // if there is no user with that email
+        // create the user
+        var newUser            = new User();
+
+        // set the user's local credentials
+        newUser.username    = req.body.username;
+        newUser.email       = req.body.email;
+        newUser.password    = newUser.generateHash(req.body.password);
+
+        // save the user
+        newUser.save(function(err) {
+          console.log("please work");
+        }).then(function() {
+          res.send({redirect: '/'});
+        }).catch(function(err) {
+          res.json(err);
+        });
     }
-	})
+
+  }); 
 });
 
 module.exports = router;
