@@ -11,18 +11,27 @@ var debug = require('debug')('express-example');
 var app = require('../server');
 
 // we bring in the models we exported with index.js
-var db = require("../models");
+//Import the mongoose module
+var mongoose = require('mongoose');
 
+//Set up default mongoose connection
+var mongoDB = 'mongodb://127.0.0.1/my_database';
+mongoose.connect(mongoDB);
+
+//Get the default connection
+var db = mongoose.connection;
+
+//Bind connection to error event (to get notification of connection errors)
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+db.once("open", function() {
+  console.log("Mongoose connection successful.");
+});
 // we set the port of the app
 app.set('port', process.env.PORT || 3000);
 
-
-// we sync the models with our db 
-// (thus creating the apropos tables)
-db.sequelize.sync().then(function () {
-	// set our app to listen to the port we set above
-  var server = app.listen(app.get('port'), function() {
-  	// then save a log of the listening to our debugger.
-    debug('Express server listening on port ' + server.address().port);
-  });
+// set our app to listen to the port we set above
+var server = app.listen(app.get('port'), function() {
+	// then save a log of the listening to our debugger.
+  debug('Express server listening on port ' + server.address().port);
 });
