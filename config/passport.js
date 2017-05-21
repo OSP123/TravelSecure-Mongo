@@ -1,48 +1,45 @@
 var passport = require("passport");
 var LocalStrategy = require("passport-local").Strategy;
 
-var db = require("../models");
+var User = require("../models/User.js");
 
 // Telling passport we want to use a Local Strategy. In other words, we want login with a username/email and password
 passport.use(new LocalStrategy(
   // Our user will sign in using an email, rather than a "username"
   {
-    usernameField: "username"
+    usernameField: "username",
+    passwordField : 'password',
+    passReqToCallback : true // allows us to pass back the entire request to the callback
   },
   function(username, password, done) {
-    // When a user tries to sign in this code runs
-    db.User.findOne({
-      where: {
-        username: username
-      }
-    }).then(function(dbUser) {
-      // If there's no user with the given username
-      if (!dbUser) {
-        return done(null, false, {
-          message: "Incorrect username."
-        });
-      }
-      // If there is a user with the given username, but the password the user gives us is incorrect
-      else if (!dbUser.validPassword(password)) {
-        return done(null, false, {
-          message: "Incorrect password."
-        });
-      }
-      // If none of the above, return the user
-      return done(null, dbUser);
+    User.findOne({ 'username' :  username }, function(err, user) {
+            // if there are any errors, return the error before anything else
+            if (err)
+                return done(err);
+
+            // if no user is found, return the message
+            if (!user)
+                return done(null, false, req.flash('loginMessage', 'No user found.')); // req.flash is the way to set flashdata using connect-flash
+
+            // if the user is found but the password is wrong
+            if (!user.validPassword(password))
+                return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.')); // create the loginMessage and save it to session as flashdata
+
+            // all is well, return successful user
+            return done(null, user);
     });
   }
 ));
 
-// In order to help keep authentication state across HTTP requests,
-// Sequelize needs to serialize and deserialize the user
-// Just consider this part boilerplate needed to make it all work
-passport.serializeUser(function(user, cb) {
-  cb(null, user);
-});
+passport.serializeUser(function(user, done) {
+        done(null, user.id);
+    });
 
-passport.deserializeUser(function(obj, cb) {
-  cb(null, obj);
+// used to deserialize the user
+passport.deserializeUser(function(id, done) {
+    User.findById(id, function(err, user) {
+        done(err, user);
+    });
 });
 
 // Exporting our configured passport

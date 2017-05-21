@@ -10,6 +10,22 @@ var session        = require('express-session');
 var methodOverride = require('method-override'); // for deletes in express
 var passport 			 = require("./config/passport");
 var config				 = require("./config/extra-config");
+var mongoose 			 = require('mongoose');
+
+
+//Set up default mongoose connection
+var configDB = require('./config/database');
+mongoose.connect(configDB.url);
+
+//Get the default connection
+var db = mongoose.connection;
+
+//Bind connection to error event (to get notification of connection errors)
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+db.once("open", function() {
+  console.log("Mongoose connection successful.");
+});
 // Express settings
 // ================
 
