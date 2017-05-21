@@ -47,9 +47,8 @@ router.post('/signup', function(req,res) {
         newUser.password    = newUser.generateHash(req.body.password);
 
         // save the user
-        newUser.save(function(err) {
-          console.log("please work");
-        }).then(function() {
+        newUser.save()
+          .then(function() {
           res.send({redirect: '/'});
         }).catch(function(err) {
           res.json(err);
