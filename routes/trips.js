@@ -1,0 +1,1 @@
+var trips_controller = require('../controllers/trips_controller');

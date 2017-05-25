@@ -1,0 +1,1 @@
+var users_controller = require('../controllers/users_controller');
