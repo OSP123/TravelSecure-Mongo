@@ -1,11 +1,6 @@
 var Trip  = require('../models/Trip');
-var express = require('express');
-var router  = express.Router();
-var isAuthenticated = require("../config/middleware/isAuthenticated");
 
-
-router.get('/', isAuthenticated, function(req, res) {
-
+exports.index = function(req, res) {
 	Trip
   .find()
   .where('UserId').equals(req.user.id)
@@ -15,9 +10,9 @@ router.get('/', isAuthenticated, function(req, res) {
 		  trip: dbTrip
 	  });
   });
-});
+};
 
-router.post('/new', isAuthenticated, function(req, res) {
+exports.createTrip = function(req, res) {
 
 	// Add id from User onto req.body
 	req.body.UserId = req.user.id;
@@ -27,6 +22,4 @@ router.post('/new', isAuthenticated, function(req, res) {
   newTrip.save().then(function(dbPost) {
     res.json(dbPost);
   });
-});
-
-module.exports = router;
+};
